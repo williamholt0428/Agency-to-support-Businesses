@@ -51,7 +51,7 @@
 | Frontend    | React 19 + Vite 6  | Lightweight, fast builds, memory-conscious |
 | Backend     | Express (Node.js)  | Minimal overhead, easy to reason about   |
 | Database    | SQLite (better-sqlite3) | Zero-config, fast, file-based        |
-| AI Layer    | Python (TBD)       | Rich AI/ML ecosystem                     |
+| AI Layer    | Python FastAPI      | Rich AI/ML ecosystem, async-ready        |
 | Proxy       | Vite built-in (dev)| Single origin on port 3000               |
 
 ## Project Structure
@@ -63,6 +63,8 @@ leadflow-app/
 │   ├── src/
 │   │   ├── db/
 │   │   │   └── init.js        # Database initialization & schema
+│   │   ├── middleware/
+│   │   │   └── aiProxy.js     # Proxies AI requests to FastAPI (port 8001)
 │   │   ├── routes/
 │   │   │   ├── auth.js        # User registration & login
 │   │   │   ├── campaigns.js   # Campaign CRUD
@@ -81,6 +83,17 @@ leadflow-app/
 │   ├── index.html
 │   ├── vite.config.js         # Proxy /api → backend
 │   └── package.json
+├── ai-service/
+│   ├── src/
+│   │   ├── main.py                     # FastAPI entry point
+│   │   ├── config.py                   # Environment configuration
+│   │   ├── personalization_engine.py   # AI message generation
+│   │   ├── lead_scorer.py              # Lead scoring engine
+│   │   ├── reply_handler.py            # Inbound reply processing
+│   │   ├── email_sender.py             # Email sending (mock/Gmail/SMTP)
+│   │   └── campaign_executor.py        # Batch campaign execution
+│   ├── requirements.txt
+│   └── .env.example
 ├── shared/
 │   └── api-contracts.md       # API contracts (both teams align here)
 └── README.md
@@ -91,6 +104,7 @@ leadflow-app/
 ### Prerequisites
 - Node.js 20+
 - npm
+- Python 3.12+
 
 ### Install & Run (Development)
 
@@ -104,6 +118,13 @@ npm run dev    # Starts on port 3001
 cd frontend
 npm install
 npm run dev    # Starts on port 3000, proxies /api → 3001
+
+# Terminal 3 — AI Service
+cd ai-service
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8001
 ```
 
 Then open http://localhost:3000 in your browser.
@@ -111,8 +132,11 @@ Then open http://localhost:3000 in your browser.
 ### API Health Check
 
 ```bash
+# Backend health
 curl http://localhost:3001/api/health
-# → {"status":"ok","service":"leadflow-ai","version":"0.1.0",...}
+
+# AI Service health
+curl http://localhost:3001/api/ai-health
 ```
 
 ## Development
@@ -125,6 +149,8 @@ See `shared/api-contracts.md` for the full API specification. This is the single
 - **SQLite** for app data (via `better-sqlite3`)
 - All API routes live under `/api/`
 - Frontend proxies `/api/*` to the backend in dev mode
+- Backend proxies AI-specific routes to the FastAPI service on port 8001
+- **Mock mode by default** — set `LEADFLOW_OPENAI_API_KEY` for real AI responses
 
 ## License
 

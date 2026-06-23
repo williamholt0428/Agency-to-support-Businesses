@@ -3,10 +3,10 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 const AI_SERVICE_URL = 'http://127.0.0.1:8001';
 
 /**
- * Filter function — only proxy requests that match AI service endpoints.
- * Non-matching requests pass through to regular Express routes.
+ * Check if a request path should be proxied to the AI service.
+ * Uses full path (e.g., /api/ai-health, /api/personalize).
  */
-function aiPathFilter(pathname) {
+function isAiPath(pathname) {
   return (
     pathname === '/api/ai-health' ||
     pathname === '/api/personalize' ||
@@ -18,11 +18,11 @@ function aiPathFilter(pathname) {
 }
 
 /**
- * Proxy middleware that forwards AI-related requests to the Python FastAPI service.
+ * Creates the proxy middleware configured for the AI service.
  * Uses a filter so non-AI requests pass through to normal Express routes.
  */
-const aiProxy = createProxyMiddleware({
-  filter: aiPathFilter,
+const aiProxyMiddleware = createProxyMiddleware({
+  filter: isAiPath,
   target: AI_SERVICE_URL,
   changeOrigin: true,
 
@@ -51,4 +51,13 @@ const aiProxy = createProxyMiddleware({
   },
 });
 
-export default aiProxy;
+/**
+ * Express-style middleware wrapper.
+ * Mounted at root level so `req.path` includes the full `/api/...` prefix.
+ */
+export default function aiProxy(req, res, next) {
+  if (isAiPath(req.path)) {
+    return aiProxyMiddleware(req, res, next);
+  }
+  next();
+}

@@ -11,6 +11,7 @@ import healthRouter from './routes/health.js';
 import leadsRouter from './routes/leads.js';
 import campaignsRouter from './routes/campaigns.js';
 import authRouter from './routes/auth.js';
+import aiProxy from './middleware/aiProxy.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,9 +28,16 @@ console.log('Database initialized');
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
-// Security & parsing middleware
+// Security middleware
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
+
+// AI proxy — mounted BEFORE JSON body parser so the request body stream
+// is preserved when forwarding to the AI service.
+// Internally checks req.path and only proxies AI-related endpoints.
+app.use(aiProxy);
+
+// Body parser for non-proxied routes
 app.use(express.json({ limit: '10mb' }));
 
 // Rate limiting
