@@ -1,0 +1,47 @@
+# --- Dependencies ---
+node_modules/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# --- Environment / Secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# --- Database ---
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# --- Build output ---
+dist/
+build/
+*.tsbuildinfo
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# --- Logs ---
+*.log
+/tmp/
+
+# --- Testing ---
+coverage/
+.nyc_output/
