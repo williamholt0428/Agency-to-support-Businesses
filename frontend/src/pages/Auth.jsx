@@ -1,17 +1,56 @@
 import React, { useState } from 'react';
+import { api } from '../api';
 
 const Auth = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: ''
+    name: '',
+    company: '',
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, we'd call the API here
-    onLogin();
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      let result;
+
+      if (isLogin) {
+        // Login — find user by email
+        result = await api.login({ email: formData.email });
+      } else {
+        // Register — create new user with 14-day trial
+        result = await api.register({
+          email: formData.email,
+          name: formData.name,
+          company: formData.company || undefined,
+        });
+
+        // Show trial success message briefly before proceeding
+        const trialEnd = new Date(result.user.trial_ends_at);
+        const daysLeft = Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24));
+        setSuccessMessage(
+          `🎉 Account created! Your 14-day free trial is active (ends ${trialEnd.toLocaleDateString()}).`
+        );
+
+        // Brief pause so user sees the success message
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      // Pass the full user object to the app
+      onLogin(result.user);
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,19 +70,63 @@ const Auth = ({ onLogin }) => {
           </p>
         </div>
 
+        {/* Success message (e.g., after registration) */}
+        {successMessage && (
+          <div style={{
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: 'var(--success)',
+            fontSize: '0.875rem',
+            marginBottom: '20px',
+            textAlign: 'center',
+          }}>
+            {successMessage}
+          </div>
+        )}
+
+        {/* Error message */}
+        {error && (
+          <div style={{
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: 'var(--error)',
+            fontSize: '0.875rem',
+            marginBottom: '20px',
+            textAlign: 'center',
+          }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           {!isLogin && (
-            <div className="form-group">
-              <label className="label">Full Name</label>
-              <input 
-                type="text" 
-                className="input" 
-                placeholder="John Doe" 
-                required 
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <label className="label">Full Name</label>
+                <input 
+                  type="text" 
+                  className="input" 
+                  placeholder="John Doe" 
+                  required 
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="label">Company (optional)</label>
+                <input 
+                  type="text" 
+                  className="input" 
+                  placeholder="Acme Corp" 
+                  value={formData.company}
+                  onChange={(e) => setFormData({...formData, company: e.target.value})}
+                />
+              </div>
+            </>
           )}
           <div className="form-group">
             <label className="label">Email Address</label>
@@ -71,8 +154,20 @@ const Auth = ({ onLogin }) => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px' }}>
-            {isLogin ? 'Sign In' : 'Create Account'}
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={{ width: '100%', marginTop: '8px', opacity: loading ? 0.7 : 1 }}
+            disabled={loading}
+          >
+            {loading ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px', margin: 0 }}></span>
+                {isLogin ? 'Signing in...' : 'Creating account...'}
+              </span>
+            ) : (
+              isLogin ? 'Sign In' : 'Create Account'
+            )}
           </button>
         </form>
 
@@ -81,7 +176,7 @@ const Auth = ({ onLogin }) => {
             {isLogin ? "Don't have an account?" : "Already have an account?"}
           </span>{' '}
           <button 
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => { setIsLogin(!isLogin); setError(null); setSuccessMessage(null); }}
             style={{ 
               background: 'none', 
               border: 'none', 
