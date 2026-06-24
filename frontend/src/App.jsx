@@ -11,6 +11,12 @@ export default function App() {
   const [view, setView] = useState('dashboard');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAppStarted, setIsAppStarted] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
 
   // If app hasn't started, show landing page
   if (!isAppStarted) {
@@ -22,15 +28,15 @@ export default function App() {
   // If app started but not authenticated, show auth
   if (!isAuthenticated) {
     return (
-      <Auth onLogin={() => setIsAuthenticated(true)} />
+      <Auth onLogin={handleLogin} />
     );
   }
 
   // Once authenticated, show main app layout
   return (
     <ToastProvider>
-      <Layout currentView={view} setView={setView}>
-        {view === 'dashboard' && <Dashboard />}
+      <Layout currentView={view} setView={setView} user={user}>
+        {view === 'dashboard' && <Dashboard user={user} />}
         {view === 'campaigns' && <CampaignBuilder />}
         {view === 'leads' && <LeadImport />}
         {view === 'settings' && (
