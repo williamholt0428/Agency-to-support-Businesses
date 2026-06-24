@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/assets/(.*)", "dest": "/dist/assets/$1" },
+    { "src": "/logo.svg", "dest": "/dist/logo.svg" },
+    { "src": "/logo-mark.png", "dest": "/dist/logo-mark.png" },
+    { "src": "/(.*)", "dest": "/dist/index.html" }
+  ]
+}

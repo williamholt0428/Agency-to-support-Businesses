@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
-const Dashboard = () => {
+const Dashboard = ({ user }) => {
   const [data, setData] = useState({
     health: null,
     leads: [],
@@ -45,7 +45,7 @@ const Dashboard = () => {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Welcome back, Jane</h1>
+        <h1 className="page-title">Welcome back, {user?.name || 'there'}</h1>
         <p className="page-subtitle">Here's what's happening with your sales pipeline today.</p>
       </div>
 

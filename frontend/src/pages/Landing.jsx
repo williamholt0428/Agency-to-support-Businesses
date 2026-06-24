@@ -58,6 +58,12 @@ const Landing = ({ onStart }) => {
     }
   ];
 
+  const pricingLinks = {
+    Starter: 'https://buy.stripe.com/28EbJ19FrbqUdVn4I63Je00',
+    Growth: 'https://buy.stripe.com/28E3cv3h33Ys5oRfmK3Je01',
+    Scale: 'https://buy.stripe.com/4gM5kD18V8eIeZr0rQ3Je02',
+  };
+
   return (
     <div className="landing-page">
       {/* Navigation */}
@@ -173,7 +179,10 @@ const Landing = ({ onStart }) => {
                   <li key={j}><span>✓</span> {f}</li>
                 ))}
               </ul>
-              <button className={`btn ${p.popular ? 'btn-primary' : 'btn-secondary'} pricing-cta`} onClick={onStart}>
+              <button 
+                className={`btn ${p.popular ? 'btn-primary' : 'btn-secondary'} pricing-cta`} 
+                onClick={() => window.open(pricingLinks[p.name], '_blank')}
+              >
                 {p.cta}
               </button>
             </div>

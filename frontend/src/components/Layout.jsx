@@ -1,12 +1,26 @@
 import React from 'react';
 
-const Sidebar = ({ currentView, setView }) => {
+const Sidebar = ({ currentView, setView, user }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'campaigns', label: 'Campaigns', icon: '🚀' },
     { id: 'leads', label: 'Leads', icon: '👥' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
+
+  // Generate initials from user name
+  const getInitials = (name) => {
+    if (!name) return '??';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  // Format subscription tier for display
+  const formatTier = (tier) => {
+    if (!tier) return 'Free Trial';
+    return tier === 'trial' ? 'Free Trial' : tier.charAt(0).toUpperCase() + tier.slice(1);
+  };
 
   return (
     <aside className="sidebar">
@@ -34,10 +48,15 @@ const Sidebar = ({ currentView, setView }) => {
 
       <div className="sidebar-footer">
         <div className="user-profile">
-          <div className="avatar">JD</div>
+          <div className="avatar">{user ? getInitials(user.name) : '?'}</div>
           <div className="user-info">
-            <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>Jane Doe</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pro Plan</div>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{user?.name || 'User'}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {formatTier(user?.subscription_tier)}
+              {user?.trial_ends_at && user.subscription_tier === 'trial' && (
+                <span> — ends {new Date(user.trial_ends_at).toLocaleDateString()}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -45,10 +64,10 @@ const Sidebar = ({ currentView, setView }) => {
   );
 };
 
-const Layout = ({ children, currentView, setView }) => {
+const Layout = ({ children, currentView, setView, user }) => {
   return (
     <div className="app-layout">
-      <Sidebar currentView={currentView} setView={setView} />
+      <Sidebar currentView={currentView} setView={setView} user={user} />
       <main className="main-content">
         <header className="header-top">
           <button className="btn btn-secondary">
