@@ -15,16 +15,13 @@ import aiProxy from './middleware/aiProxy.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Ensure data directory exists
+// Ensure data directory exists (local dev only)
 const dataDir = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(dataDir)) {
+if (!process.env.VERCEL && !fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Initialize database
-initDb();
-console.log('Database initialized');
-
+// Initialize database (async — in-memory on Vercel, SQLite locally)
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
@@ -34,7 +31,6 @@ app.use(cors());
 
 // AI proxy — mounted BEFORE JSON body parser so the request body stream
 // is preserved when forwarding to the AI service.
-// Internally checks req.path and only proxies AI-related endpoints.
 app.use(aiProxy);
 
 // Body parser for non-proxied routes
@@ -66,6 +62,19 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`LeadFlow AI backend listening on http://0.0.0.0:${PORT}`);
-});
+// Start server (only in local dev, not on Vercel)
+async function start() {
+  await initDb();
+  console.log('Database initialized');
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`LeadFlow AI backend listening on http://0.0.0.0:${PORT}`);
+  });
+}
+
+// Only call start() if not on Vercel
+if (!process.env.VERCEL) {
+  start();
+}
+
+export default app;

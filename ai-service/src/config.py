@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # --- Server ---
-    host: str = "127.0.0.1"
+    host: str = "0.0.0.0"
     port: int = 8001
     log_level: str = "info"
 
@@ -59,3 +59,11 @@ if not settings.openai_api_key:
 # Auto-detect provider from key presence
 if settings.openai_api_key and settings.llm_provider == LLMProvider.MOCK:
     settings.llm_provider = LLMProvider.OPENAI
+
+# Override port with $PORT env var (standard on Render, Heroku, etc.)
+_port_from_env = os.environ.get("PORT")
+if _port_from_env:
+    try:
+        settings.port = int(_port_from_env)
+    except (ValueError, TypeError):
+        pass

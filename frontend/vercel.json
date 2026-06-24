@@ -7,9 +7,14 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "../api/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/assets/(.*)", "dest": "/dist/assets/$1" },
     { "src": "/logo.svg", "dest": "/dist/logo.svg" },
     { "src": "/logo-mark.png", "dest": "/dist/logo-mark.png" },
