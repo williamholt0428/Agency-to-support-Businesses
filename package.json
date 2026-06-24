@@ -1,0 +1,14 @@
+{
+  "name": "leadflow-ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "helmet": "^8.0.0",
+    "express-rate-limit": "^7.4.0",
+    "http-proxy-middleware": "^3.0.3",
+    "uuid": "^10.0.0"
+  }
+}
