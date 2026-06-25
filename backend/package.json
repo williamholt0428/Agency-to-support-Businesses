@@ -9,7 +9,7 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.7.0",
+    "better-sqlite3": "^12.11.1",
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "express-rate-limit": "^7.4.0",
