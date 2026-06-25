@@ -74,15 +74,30 @@ The Procfile at `ai-service/Procfile` will also work for automatic detection.
 6. Set **Work directory:** `ai-service`
 7. Add env vars and deploy
 
-## Environment Variables
+## Environment Variables (Vercel + AI Service)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `OPENAI_API_KEY` | No (mock mode) | OpenAI API key for real AI |
-| `LEADFLOW_OPENAI_API_KEY` | No | Same as above (LeadFlow prefix) |
-| `LEADFLOW_LOG_LEVEL` | No | `info`, `debug`, `warning` (default: `info`) |
-| `PORT` | Auto | Set by hosting platform (Render, Heroku) |
-| `LEADFLOW_EMAIL_PROVIDER` | No | `mock`, `gmail`, `smtp` (default: `mock`) |
+Use these **exact** names in Vercel dashboard and your AI service hosting platform (Render, Railway, etc.).
+
+| Variable                    | Required for SMTP | Example / Description |
+|-----------------------------|-------------------|-----------------------|
+| `LEADFLOW_EMAIL_PROVIDER`   | Yes (for real sends) | `smtp` |
+| `LEADFLOW_SMTP_HOST`        | Yes | `smtp.gmail.com` |
+| `LEADFLOW_SMTP_PORT`        | No (default 587) | 587 (STARTTLS) |
+| `LEADFLOW_SMTP_USER`        | Yes | `william.holt0428@gmail.com` (owner default sender) |
+| `LEADFLOW_SMTP_PASSWORD`    | Yes | **16-character Google App Password only** — never your regular Gmail password |
+| `AI_SERVICE_URL`            | Yes (Vercel) | `https://your-ai-service.onrender.com` |
+| `LEADFLOW_OPENAI_API_KEY`   | No | For personalization (fallback to `OPENAI_API_KEY`) |
+
+**Gmail App Password Setup Checklist (Owner must follow):**
+1. Go to Google Account → Security → Enable **2-Step Verification** (if not already on).
+2. In the same Security section, click "App passwords" → Select "Mail" and "Other" → Generate a 16-character password.
+3. Copy the App Password and set it as the `LEADFLOW_SMTP_PASSWORD` env var (do **not** store or commit it).
+4. Set all Vercel env vars above and redeploy.
+5. Test with: `curl -X POST https://your-ai-service-url/api/test-email`
+   - Success example: `{"success":true,"status":"ready","provider":"smtp","host":"smtp.gmail.com","message":"SMTP connection validated successfully (Gmail App Password accepted)"}`
+6. **Warning:** Using a regular Gmail password will cause `SMTPAuthenticationError`. The code explicitly calls this out and will never silently succeed.
+
+Owner default sender: `william.holt0428@gmail.com`. Update `from_email` in campaign executor if needed.
 
 ## Architecture Note
 
