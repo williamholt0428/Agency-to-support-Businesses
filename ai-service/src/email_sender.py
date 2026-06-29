@@ -162,12 +162,11 @@ async def _send_gmail(
 ) -> dict[str, Any]:
     """
     Send via Gmail API (OAuth2). Not yet implemented.
-    Would use google-api-python-client + google-auth.
+    Recommendation: Use 'smtp' provider with smtp.gmail.com:587 + App Password.
     """
     error_msg = (
-        "Gmail API integration is not yet implemented. "
-        "Use 'smtp' provider with Gmail SMTP (smtp.gmail.com:587) instead, "
-        "with an App Password. Requires LEADFLOW_SMTP_* variables."
+        "Gmail API (OAuth2) integration is not yet implemented. "
+        "Use LEADFLOW_EMAIL_PROVIDER=smtp with smtp.gmail.com:587 and a Gmail App Password instead."
     )
     logger.warning(error_msg)
     return {
@@ -175,3 +174,68 @@ async def _send_gmail(
         "error": error_msg,
         "provider": "gmail",
     }
+
+
+async def test_smtp_connection() -> dict[str, Any]:
+    """
+    Lightweight test to validate SMTP configuration and connectivity without sending an email.
+    Used by the /api/test-email endpoint.
+    """
+    if settings.email_provider != "smtp":
+        return {
+            "success": True,
+            "status": "ready",
+            "provider": settings.email_provider,
+            "message": f"Provider '{settings.email_provider}' selected (no SMTP validation needed)",
+        }
+
+    if not settings.smtp_host or not settings.smtp_user or not settings.smtp_password:
+        return {
+            "success": False,
+            "status": "not_configured",
+            "provider": "smtp",
+            "error": "SMTP credentials not configured. Set LEADFLOW_SMTP_HOST, LEADFLOW_SMTP_USER, and LEADFLOW_SMTP_PASSWORD.",
+        }
+
+    smtp_port = settings.smtp_port
+    use_ssl = smtp_port in (465, 2465)
+
+    try:
+        if use_ssl:
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(settings.smtp_host, smtp_port, timeout=10)
+        else:
+            server = smtplib.SMTP(settings.smtp_host, smtp_port, timeout=10)
+            server.starttls(context=ssl.create_default_context())
+
+        server.login(settings.smtp_user, settings.smtp_password)
+        server.quit()
+
+        logger.info(f"SMTP test successful to {settings.smtp_host}:{smtp_port}")
+        return {
+            "success": True,
+            "status": "ready",
+            "provider": "smtp",
+            "host": settings.smtp_host,
+            "port": smtp_port,
+            "message": "SMTP connection validated successfully (Gmail App Password accepted)",
+        }
+
+    except smtplib.SMTPAuthenticationError:
+        error = "SMTP authentication failed. For Gmail, this usually means you are using your regular password instead of an App Password. Enable 2FA and generate one at https://myaccount.google.com/apppasswords."
+        logger.error(error)
+        return {
+            "success": False,
+            "status": "auth_failed",
+            "error": error,
+            "provider": "smtp",
+        }
+    except Exception as e:
+        logger.exception("SMTP test failed")
+        return {
+            "success": False,
+            "status": "connection_failed",
+            "error": str(e),
+            "provider": "smtp",
+            "host": settings.smtp_host,
+        }

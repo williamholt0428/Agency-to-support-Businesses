@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import LLMProvider, settings
 from .campaign_executor import execute_campaign_step
-from .email_sender import send_email
+from .email_sender import send_email, test_smtp_connection
 from .lead_scorer import score_lead
 from .personalization_engine import CampaignContext, LeadData, generate_personalized_message
 from .reply_handler import handle_reply
@@ -267,6 +267,27 @@ async def execute_campaign(body: dict[str, Any]):
         raise HTTPException(status_code=500, detail={
             "success": False,
             "error": f"Failed to execute campaign: {str(e)}",
+        })
+
+
+@app.post("/api/test-email")
+async def test_email_endpoint():
+    """
+    Test endpoint to validate SMTP configuration and connectivity.
+    Does NOT send any real email. Returns ready/not_configured/auth_failed states.
+    """
+    try:
+        result = await test_smtp_connection()
+        if not result.get("success", False):
+            raise HTTPException(status_code=400, detail=result)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Email test failed")
+        raise HTTPException(status_code=500, detail={
+            "success": False,
+            "error": f"Test failed: {str(e)}",
         })
 
 
