@@ -190,6 +190,45 @@ const Landing = ({ onStart }) => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="faq-section container">
+        <div className="section-header text-center">
+          <h2 className="section-title">Frequently Asked Questions</h2>
+        </div>
+        <div className="faq-grid">
+          <div className="faq-item card">
+            <h4>How is my data handled?</h4>
+            <p>We take privacy seriously. Your lead data is never sold or shared with third parties. All information is encrypted and used only to power your campaigns.</p>
+          </div>
+          <div className="faq-item card">
+            <h4>Can I cancel anytime?</h4>
+            <p>Yes. Cancel your subscription from the dashboard at any time with no penalties or long-term contracts.</p>
+          </div>
+          <div className="faq-item card">
+            <h4>What happens during the free trial?</h4>
+            <p>The 14-day free trial gives full access to all features including AI personalization, campaign sending, and reply handling — no credit card required to start.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Social Proof */}
+      <section className="trust-section container">
+        <div className="section-header text-center">
+          <h2 className="section-title">Trusted by SaaS teams scaling pipeline</h2>
+        </div>
+        <div className="trust-grid">
+          <div className="trust-card card">
+            <p>"LeadFlow helped our early-stage team book its first 10 meetings in under a week. The AI reply handler is a game changer."</p>
+            <div className="trust-author">— Alex Rivera, Founder @ GrowthFlow</div>
+          </div>
+          <div className="trust-logos">
+            <div className="logo-placeholder">Logo</div>
+            <div className="logo-placeholder">Logo</div>
+            <div className="logo-placeholder">Logo</div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="landing-footer">
         <div className="container">
@@ -209,8 +248,8 @@ const Landing = ({ onStart }) => {
           </div>
         </div>
       </footer>
-    </div>
-  );
-};
+      </div>
+      );
+      };
 
-export default Landing;
+      export default Landing;

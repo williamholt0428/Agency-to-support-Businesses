@@ -49,6 +49,11 @@ const Dashboard = ({ user }) => {
         <p className="page-subtitle">Here's what's happening with your sales pipeline today.</p>
       </div>
 
+      {/* Onboarding for first-time users */}
+      {(data.leads.length === 0 && data.campaigns.length === 0) && (
+        <OnboardingGuide setView={setView} />
+      )}
+
       <div className="stats-grid">
         {stats.map((stat, i) => (
           <div key={i} className="card stat-card">
