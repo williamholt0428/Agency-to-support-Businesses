@@ -604,6 +604,66 @@ p {
 .footer-links a { color: var(--text-muted); font-size: 0.875rem; text-decoration: none; }
 .footer-copyright { color: var(--text-muted); font-size: 0.875rem; }
 
+/* FAQ & Trust Styles */
+.faq-section, .trust-section { padding: 80px 0; }
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.faq-item { padding: 24px; }
+.faq-item h4 {
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.trust-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.trust-card {
+  font-style: italic;
+  padding: 32px;
+}
+.trust-card p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+.trust-author {
+  margin-top: 16px;
+  font-style: normal;
+  color: var(--primary-light);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.trust-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  opacity: 0.7;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-border);
+}
+.logo-placeholder {
+  padding: 10px 24px;
+  background: var(--bg-surface);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  border: 1px solid var(--glass-border);
+  white-space: nowrap;
+}
+
 @media (max-width: 992px) {
   .hero-section { grid-template-columns: 1fr; text-align: center; }
   .hero-subtitle { margin: 0 auto 40px; }

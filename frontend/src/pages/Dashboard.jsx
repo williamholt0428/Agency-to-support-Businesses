@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
+import OnboardingGuide from '../components/OnboardingGuide';
 
-const Dashboard = ({ user }) => {
+const Dashboard = ({ user, setView }) => {
   const [data, setData] = useState({
     health: null,
     leads: [],
@@ -48,6 +49,11 @@ const Dashboard = ({ user }) => {
         <h1 className="page-title">Welcome back, {user?.name || 'there'}</h1>
         <p className="page-subtitle">Here's what's happening with your sales pipeline today.</p>
       </div>
+
+      {/* Onboarding for first-time users */}
+      {(data.leads.length === 0 && data.campaigns.length === 0) && (
+        <OnboardingGuide setView={setView} />
+      )}
 
       <div className="stats-grid">
         {stats.map((stat, i) => (
