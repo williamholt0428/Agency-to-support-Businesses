@@ -289,10 +289,62 @@
 
 ---
 
+## 7. SMTP Connectivity Test — `GET /api/smtp-test`
+
+**Purpose:** Verify SMTP credentials can connect without sending a real email.
+
+**Response (configured & working):**
+```json
+{
+  "success": true,
+  "provider": "smtp",
+  "configured": true,
+  "host": "smtp.gmail.com",
+  "port": 587,
+  "user": "alex@leadflow.ai"
+}
+```
+
+**Response (not configured):**
+```json
+{
+  "success": false,
+  "error": "SMTP not configured. Set LEADFLOW_SMTP_HOST, LEADFLOW_SMTP_USER, and LEADFLOW_SMTP_PASSWORD environment variables.",
+  "provider": "smtp",
+  "configured": false
+}
+```
+
+---
+
+## 8. Readiness Check — `GET /api/readiness`
+
+**Purpose:** Comprehensive readiness check — verifies every subsystem with smoke tests.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "leadflow-ai-service",
+  "version": "0.1.0",
+  "uptime_seconds": 3600,
+  "checks": {
+    "llm": {"available": true, "provider": "openai", "model": "gpt-4o-mini"},
+    "email": {"provider": "mock", "configured": true, "status": "mock_mode"},
+    "personalization": {"available": true, "model_used": "mock"},
+    "lead_scoring": {"available": true, "sample_score": 0.75},
+    "reply_handler": {"available": true, "hot_lead_detected": true}
+  }
+}
+```
+
+**Status values:** `"ok"` (all checks pass), `"degraded"` (some subsystems unavailable but service is running).
+
+---
+
 ## Architecture Notes
 
-- **Backend** (Node.js/Express, port 3001) routes `POST /api/personalize`, `POST /api/send-email`, `POST /api/handle-reply`, `GET /api/leads/:id/score`, `POST /api/campaigns/execute` to the AI service.
-- **AI Service** (Python/FastAPI, port 8001) runs on the same host but on a private loopback interface.
-- All AI requests go through the backend as a proxy — the frontend never talks directly to the AI service.
-- Rate limiting is handled by the backend.
-- Authentication/authorization is handled by the backend.
+- **Backend** (Node.js/Express) routes all AI endpoints plus `GET /api/smtp-test` and `GET /api/readiness` to the AI service.
+- **AI Service** (Python/FastAPI) runs on a loopback interface in local dev (`127.0.0.1:8001`). In production, deploy externally and set `AI_SERVICE_URL` on the backend.
+- The backend proxies AI requests — the frontend never talks directly to the AI service.
+- Rate limiting and authentication are handled by the backend.

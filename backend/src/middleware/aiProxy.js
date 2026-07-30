@@ -1,6 +1,6 @@
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
-const AI_SERVICE_URL = 'http://127.0.0.1:8001';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8001';
 
 /**
  * Check if a request path should be proxied to the AI service.
@@ -13,6 +13,8 @@ function isAiPath(pathname) {
     pathname === '/api/send-email' ||
     pathname === '/api/handle-reply' ||
     pathname === '/api/campaigns/execute' ||
+    pathname === '/api/readiness' ||
+    pathname === '/api/smtp-test' ||
     /^\/api\/leads\/[^/]+\/score$/.test(pathname)
   );
 }

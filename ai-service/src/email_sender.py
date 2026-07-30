@@ -175,3 +175,62 @@ async def _send_gmail(
         "error": error_msg,
         "provider": "gmail",
     }
+
+
+async def test_smtp_connection() -> dict[str, Any]:
+    """
+    Test SMTP connectivity without sending an actual email.
+    Connects, authenticates, and disconnects to verify configuration.
+
+    Returns:
+        Dict with success status, provider details, and any error message.
+    """
+    if not settings.smtp_host or not settings.smtp_user or not settings.smtp_password:
+        return {
+            "success": False,
+            "error": "SMTP not configured. Set LEADFLOW_SMTP_HOST, LEADFLOW_SMTP_USER, "
+                     "and LEADFLOW_SMTP_PASSWORD environment variables.",
+            "provider": "smtp",
+            "configured": False,
+        }
+
+    smtp_port = settings.smtp_port
+    use_ssl = smtp_port in (465, 2465)
+
+    try:
+        if use_ssl:
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(settings.smtp_host, smtp_port, context=context, timeout=15)
+        else:
+            server = smtplib.SMTP(settings.smtp_host, smtp_port, timeout=15)
+            server.starttls(context=ssl.create_default_context())
+
+        server.login(settings.smtp_user, settings.smtp_password)
+        server.quit()
+
+        logger.info("SMTP connection test successful")
+        return {
+            "success": True,
+            "provider": "smtp",
+            "configured": True,
+            "host": settings.smtp_host,
+            "port": smtp_port,
+            "user": settings.smtp_user,
+        }
+
+    except smtplib.SMTPAuthenticationError:
+        error = "SMTP authentication failed. Check LEADFLOW_SMTP_USER and LEADFLOW_SMTP_PASSWORD."
+        logger.error(error)
+        return {"success": False, "error": error, "provider": "smtp", "configured": True}
+    except smtplib.SMTPConnectError as e:
+        error = f"Failed to connect to SMTP server {settings.smtp_host}:{smtp_port}: {str(e)}"
+        logger.error(error)
+        return {"success": False, "error": error, "provider": "smtp", "configured": True}
+    except Exception as e:
+        logger.exception("SMTP connection test failed")
+        return {
+            "success": False,
+            "error": f"SMTP test error: {str(e)}",
+            "provider": "smtp",
+            "configured": True,
+        }

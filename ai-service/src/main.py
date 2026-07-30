@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import LLMProvider, settings
 from .campaign_executor import execute_campaign_step
-from .email_sender import send_email
+from .email_sender import send_email, test_smtp_connection
 from .lead_scorer import score_lead
 from .personalization_engine import CampaignContext, LeadData, generate_personalized_message
 from .reply_handler import handle_reply
@@ -268,6 +268,121 @@ async def execute_campaign(body: dict[str, Any]):
             "success": False,
             "error": f"Failed to execute campaign: {str(e)}",
         })
+
+
+@app.get("/api/smtp-test")
+async def smtp_test():
+    """
+    Test SMTP connectivity without sending an email.
+    Verifies that LEADFLOW_SMTP_HOST/USER/PASSWORD are correct.
+    """
+    try:
+        result = await test_smtp_connection()
+        return result
+    except Exception as e:
+        logger.exception("SMTP test failed")
+        raise HTTPException(status_code=500, detail={
+            "success": False,
+            "error": f"SMTP test error: {str(e)}",
+        })
+
+
+@app.get("/api/readiness")
+async def readiness():
+    """
+    Comprehensive readiness check — verifies every subsystem:
+    - LLM availability
+    - Email provider status
+    - Personalization engine (smoke test)
+    - Lead scoring (smoke test)
+    - Reply handler (smoke test)
+    """
+    checks: dict[str, dict[str, Any]] = {}
+
+    # 1. LLM check
+    llm_available = settings.llm_provider != LLMProvider.MOCK
+    checks["llm"] = {
+        "available": llm_available,
+        "provider": settings.llm_provider.value,
+        "model": settings.openai_model if llm_available else "mock",
+    }
+
+    # 2. Email provider check
+    email_provider = settings.email_provider
+    checks["email"] = {
+        "provider": email_provider,
+        "configured": False,
+        "status": "unknown",
+    }
+    if email_provider == "mock":
+        checks["email"]["configured"] = True
+        checks["email"]["status"] = "mock_mode"
+    elif email_provider == "smtp":
+        smtp_configured = bool(settings.smtp_host and settings.smtp_user and settings.smtp_password)
+        checks["email"]["configured"] = smtp_configured
+        checks["email"]["status"] = "configured" if smtp_configured else "missing_credentials"
+    elif email_provider == "gmail":
+        checks["email"]["configured"] = False
+        checks["email"]["status"] = "not_implemented"
+
+    # 3. Personalization engine smoke test
+    try:
+        test_lead = LeadData(name="Test User", company="TestCo", title="CEO", industry="SaaS")
+        test_ctx = CampaignContext(
+            product_name="LeadFlow AI",
+            product_description="Test",
+            value_proposition="Save time",
+            tone="professional",
+        )
+        personalization = generate_personalized_message(test_lead, test_ctx, step_number=1)
+        checks["personalization"] = {
+            "available": personalization.get("success", False),
+            "model_used": personalization.get("model_used", "unknown"),
+        }
+    except Exception as e:
+        checks["personalization"] = {"available": False, "error": str(e)}
+
+    # 4. Lead scoring smoke test
+    try:
+        score_result = score_lead(
+            lead={"id": "test-1", "title": "CTO", "company": "TechCo", "industry": "SaaS"},
+            engagement_history=[],
+        )
+        checks["lead_scoring"] = {
+            "available": True,
+            "sample_score": score_result.get("score", 0),
+        }
+    except Exception as e:
+        checks["lead_scoring"] = {"available": False, "error": str(e)}
+
+    # 5. Reply handler smoke test
+    try:
+        reply_result = handle_reply(
+            original_email={"subject": "Hi", "body": "Hello from LeadFlow"},
+            incoming_reply={"subject": "Re: Hi", "body": "I'm interested, tell me more"},
+            lead={"name": "Test User", "company": "TestCo", "title": "CEO"},
+            campaign_context={"product_name": "LeadFlow AI"},
+        )
+        checks["reply_handler"] = {
+            "available": reply_result.get("success", False),
+            "hot_lead_detected": reply_result.get("hot_lead", False),
+        }
+    except Exception as e:
+        checks["reply_handler"] = {"available": False, "error": str(e)}
+
+    # Determine overall status
+    all_ok = all(
+        c.get("available", c.get("configured", False))
+        for c in checks.values()
+    )
+
+    return {
+        "status": "ok" if all_ok else "degraded",
+        "service": "leadflow-ai-service",
+        "version": "0.1.0",
+        "uptime_seconds": int(time.time() - _start_time),
+        "checks": checks,
+    }
 
 
 # ---------------------------------------------------------------------------

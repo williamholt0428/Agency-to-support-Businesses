@@ -83,6 +83,23 @@ The Procfile at `ai-service/Procfile` will also work for automatic detection.
 | `LEADFLOW_LOG_LEVEL` | No | `info`, `debug`, `warning` (default: `info`) |
 | `PORT` | Auto | Set by hosting platform (Render, Heroku) |
 | `LEADFLOW_EMAIL_PROVIDER` | No | `mock`, `gmail`, `smtp` (default: `mock`) |
+| `LEADFLOW_SMTP_HOST` | No | SMTP server hostname (e.g. `smtp.gmail.com`) |
+| `LEADFLOW_SMTP_PORT` | No | SMTP port (default: `587`) |
+| `LEADFLOW_SMTP_USER` | No | SMTP username / email |
+| `LEADFLOW_SMTP_PASSWORD` | No | SMTP password / app password |
+| `AI_SERVICE_URL` | No (Backend) | Public URL of this AI service (set on the backend, not here) |
+
+## Backend Integration
+
+Once the AI service is deployed, configure the Node.js backend to point to it:
+
+Set the `AI_SERVICE_URL` environment variable on the backend (Vercel dashboard or local `.env`):
+
+```bash
+AI_SERVICE_URL=https://leadflow-ai-service.onrender.com
+```
+
+The `aiProxy.js` middleware reads this variable. If not set, it falls back to `http://127.0.0.1:8001` (local development).
 
 ## Architecture Note
 
@@ -102,4 +119,49 @@ Once deployed, verify the service is running:
 ```bash
 curl https://your-service-url/api/ai-health
 # → {"status":"ok","service":"leadflow-ai-service","version":"0.1.0",...}
+```
+
+## Readiness Check (Comprehensive)
+
+The `/api/readiness` endpoint runs smoke tests against every subsystem:
+
+```bash
+curl https://your-service-url/api/readiness
+```
+
+Response includes per-subsystem status:
+```json
+{
+  "status": "ok",
+  "checks": {
+    "llm": {"available": true, "provider": "openai", "model": "gpt-4o-mini"},
+    "email": {"provider": "mock", "configured": true, "status": "mock_mode"},
+    "personalization": {"available": true, "model_used": "mock"},
+    "lead_scoring": {"available": true, "sample_score": 0.75},
+    "reply_handler": {"available": true, "hot_lead_detected": true}
+  }
+}
+```
+
+### Automated Readiness Script
+
+Run the full readiness check suite locally or against a deployed instance:
+
+```bash
+# Local dev
+./scripts/readiness_check.sh
+
+# Against deployed service
+./scripts/readiness_check.sh https://leadflow-ai-service.onrender.com
+```
+
+The script tests all 7 endpoints: health, readiness, personalization, lead scoring, reply handling, campaign execution, and SMTP connectivity.
+
+## SMTP Test
+
+Verify SMTP credentials without sending a real email:
+
+```bash
+curl https://your-service-url/api/smtp-test
+# → {"success": true, "provider": "smtp", "configured": true, "host": "smtp.gmail.com", "port": 587}
 ```
