@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 import OnboardingGuide from '../components/OnboardingGuide';
 
-const Dashboard = ({ user }) => {
+const Dashboard = ({ user, setView }) => {
   const [data, setData] = useState({
     health: null,
     leads: [],

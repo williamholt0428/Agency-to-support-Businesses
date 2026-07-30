@@ -36,7 +36,7 @@ export default function App() {
   return (
     <ToastProvider>
       <Layout currentView={view} setView={setView} user={user}>
-        {view === 'dashboard' && <Dashboard user={user} />}
+        {view === 'dashboard' && <Dashboard user={user} setView={setView} />}
         {view === 'campaigns' && <CampaignBuilder />}
         {view === 'leads' && <LeadImport />}
         {view === 'settings' && (

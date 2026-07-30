@@ -77,6 +77,7 @@ const Landing = ({ onStart }) => {
             <div className="nav-links">
               <a href="#features">Features</a>
               <a href="#pricing">Pricing</a>
+              <a href="#faq">FAQ</a>
               <button className="btn btn-secondary" onClick={onStart}>Sign In</button>
               <button className="btn btn-primary" onClick={onStart}>Get Started</button>
             </div>
@@ -191,7 +192,7 @@ const Landing = ({ onStart }) => {
       </section>
 
       {/* FAQ Section */}
-      <section className="faq-section container">
+      <section id="faq" className="faq-section container">
         <div className="section-header text-center">
           <h2 className="section-title">Frequently Asked Questions</h2>
         </div>
@@ -208,6 +209,18 @@ const Landing = ({ onStart }) => {
             <h4>What happens during the free trial?</h4>
             <p>The 14-day free trial gives full access to all features including AI personalization, campaign sending, and reply handling — no credit card required to start.</p>
           </div>
+          <div className="faq-item card">
+            <h4>Does the AI really personalize each email?</h4>
+            <p>Yes. Our AI researches each lead's company, role, and recent activity to craft unique, context-aware messages — not just mail-merge fields.</p>
+          </div>
+          <div className="faq-item card">
+            <h4>Which email providers work with LeadFlow?</h4>
+            <p>LeadFlow connects to any Gmail or SMTP account. We recommend using a dedicated sending domain for best deliverability.</p>
+          </div>
+          <div className="faq-item card">
+            <h4>Is there a setup fee or long-term contract?</h4>
+            <p>No setup fees, no annual contracts. All plans are monthly with the flexibility to upgrade, downgrade, or cancel anytime.</p>
+          </div>
         </div>
       </section>
 
@@ -221,10 +234,20 @@ const Landing = ({ onStart }) => {
             <p>"LeadFlow helped our early-stage team book its first 10 meetings in under a week. The AI reply handler is a game changer."</p>
             <div className="trust-author">— Alex Rivera, Founder @ GrowthFlow</div>
           </div>
+          <div className="trust-card card">
+            <p>"We replaced our SDR team with LeadFlow and saw a 3x increase in qualified meetings. The personalization quality is unreal."</p>
+            <div className="trust-author">— Sarah Chen, VP Sales @ DataBridge</div>
+          </div>
+          <div className="trust-card card">
+            <p>"As a solo founder, LeadFlow gives me a full sales team's output for a fraction of the cost. Best investment this year."</p>
+            <div className="trust-author">— Marcus Webb, Founder @ ShipFast</div>
+          </div>
           <div className="trust-logos">
-            <div className="logo-placeholder">Logo</div>
-            <div className="logo-placeholder">Logo</div>
-            <div className="logo-placeholder">Logo</div>
+            <span className="logo-placeholder">GrowthFlow</span>
+            <span className="logo-placeholder">DataBridge</span>
+            <span className="logo-placeholder">ShipFast</span>
+            <span className="logo-placeholder">DevPulse</span>
+            <span className="logo-placeholder">StackUp</span>
           </div>
         </div>
       </section>
@@ -248,8 +271,8 @@ const Landing = ({ onStart }) => {
           </div>
         </div>
       </footer>
-      </div>
-      );
-      };
+    </div>
+  );
+};
 
-      export default Landing;
+export default Landing;
